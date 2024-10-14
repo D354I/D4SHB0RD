@@ -17,28 +17,6 @@ const SearchForm = ({
     setEndYear("");
   };
 
-  const handleQueryChange = (e) => {
-    const value = e.target.value;
-    // Using requestAnimationFrame to schedule the state update
-    requestAnimationFrame(() => {
-      setQuery(value);
-    });
-  };
-
-  const handleStartYearChange = (e) => {
-    const value = e.target.value;
-    requestAnimationFrame(() => {
-      setStartYear(value);
-    });
-  };
-
-  const handleEndYearChange = (e) => {
-    const value = e.target.value;
-    requestAnimationFrame(() => {
-      setEndYear(value);
-    });
-  };
-
   return (
     <form
       onSubmit={(e) => {
@@ -53,7 +31,7 @@ const SearchForm = ({
             type="text"
             placeholder="You can search for insights by any word...."
             value={query}
-            onChange={handleQueryChange} // Updated handler
+            onChange={(e) => setQuery(e.target.value)}
             className="form-control"
             style={{ height: "40px" }}
           />
@@ -81,7 +59,7 @@ const SearchForm = ({
         <div className="col-lg-2 col-md-3">
           <select
             value={startYear}
-            onChange={handleStartYearChange} // Updated handler
+            onChange={(e) => setStartYear(e.target.value)}
             className="form-select"
             style={{ height: "40px" }}
           >
@@ -100,7 +78,7 @@ const SearchForm = ({
         <div className="col-lg-2 col-md-3">
           <select
             value={endYear}
-            onChange={handleEndYearChange} // Updated handler
+            onChange={(e) => setEndYear(e.target.value)}
             className="form-select"
             style={{ height: "40px" }}
           >
