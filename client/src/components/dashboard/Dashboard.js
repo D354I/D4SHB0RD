@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { fetchData } from "../../services/api";
 import SummaryCards from "./SummaryCards";
 import SearchForm from "./SearchForm";
@@ -12,7 +12,6 @@ import SourceChart from "../charts/SourceChart";
 import PestleChart from "../charts/PestleChart";
 import BubbleChart from "../charts/BubbleChart";
 import ChartCard from "./ChartCard";
-import { debounce } from "lodash"; // Import debounce from lodash
 
 const Dashboard = () => {
   const [insights, setInsights] = useState([]);
@@ -36,72 +35,21 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 10;
 
-  // Debounced search function to optimize performance
-  const debouncedFetchData = useMemo(
-    () => debounce(async () => {
-      setIsLoading(true);
-      setErrorMessage("");
-
-      if ((startYear || endYear) && !query) {
-        setErrorMessage("Search query is required when filtering by year.");
-        setIsLoading(false);
-        return;
-      }
-
-      if ((startYear && !endYear) || (!startYear && endYear)) {
-        setErrorMessage(
-          "Both start year and end year must be provided for year-based search."
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      if (startYear && endYear && Number(startYear) > Number(endYear)) {
-        setErrorMessage("Start year must be less than or equal to end year.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const data = await fetchData(query, startYear, endYear);
-
-        if (data && data.insights) {
-          setInsights(data.insights);
-          setChartData(data.chartData);
-          setSummary(data.summary);
-          setKeyword(query);
-        } else {
-          setInsights([]);
-          setChartData({
-            countryData: [],
-            sectorData: [],
-            topicData: [],
-            sourceData: [],
-            pestleData: [],
-            bubbleData: [],
-          });
-          setSummary({});
-          setErrorMessage("No data available for this keyword search.");
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setErrorMessage(
-          "An error occurred while fetching data. Please try again."
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300), // Debounce delay in milliseconds
-    [query, startYear, endYear]
-  );
-
   useEffect(() => {
     const fetchDataOnLoad = async () => {
       setIsLoading(true);
       try {
         const data = await fetchData(query, startYear, endYear);
+
         setInsights(data?.insights || []);
-        setChartData(data?.chartData || {});
+        setChartData({
+          countryData: data?.chartData?.countryData || [],
+          sectorData: data?.chartData?.sectorData || [],
+          topicData: data?.chartData?.topicData || [],
+          sourceData: data?.chartData?.sourceData || [],
+          pestleData: data?.chartData?.pestleData || [],
+          bubbleData: data?.chartData?.bubbleData || [],
+        });
         setSummary(data?.summary || {});
         setKeyword(query || "insights");
       } catch (error) {
@@ -112,14 +60,70 @@ const Dashboard = () => {
     };
 
     fetchDataOnLoad();
-  }, []); // Initial data fetch on mount
+    // eslint-disable-next-line
+  }, []);
 
-  useEffect(() => {
-    debouncedFetchData(); // Call the debounced fetch on query changes
-    return () => {
-      debouncedFetchData.cancel(); // Cleanup on unmount
-    };
-  }, [debouncedFetchData]); // Trigger on search parameters change
+  const handleSearch = async () => {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    if ((startYear || endYear) && !query) {
+      setErrorMessage("Search query is required when filtering by year.");
+      setIsLoading(false);
+      return;
+    }
+
+    if ((startYear && !endYear) || (!startYear && endYear)) {
+      setErrorMessage(
+        "Both start year and end year must be provided for year-based search."
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    if (startYear && endYear && Number(startYear) > Number(endYear)) {
+      setErrorMessage("Start year must be less than or equal to end year.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const data = await fetchData(query, startYear, endYear);
+
+      if (data && data.insights && data.insights.length > 0) {
+        setInsights(data.insights);
+        setChartData({
+          countryData: data.chartData?.countryData || [],
+          sectorData: data.chartData?.sectorData || [],
+          topicData: data.chartData?.topicData || [],
+          sourceData: data.chartData?.sourceData || [],
+          pestleData: data.chartData?.pestleData || [],
+          bubbleData: data.chartData?.bubbleData || [],
+        });
+        setSummary(data.summary || {});
+        setKeyword(query);
+      } else {
+        setInsights([]);
+        setChartData({
+          countryData: [],
+          sectorData: [],
+          topicData: [],
+          sourceData: [],
+          pestleData: [],
+          bubbleData: [],
+        });
+        setSummary({});
+        setErrorMessage("No data available for this keyword search.");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setErrorMessage(
+        "An error occurred while fetching data. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleMaximize = (chart) => {
     setActiveChart(chart);
@@ -137,6 +141,19 @@ const Dashboard = () => {
   };
 
   const totalPages = Math.ceil(insights.length / itemsPerPage);
+
+//   const pageNumbersToShow = () => {
+//     const range = 3;
+//     const start = Math.max(1, currentPage - Math.floor(range / 2));
+//     const end = Math.min(totalPages, start + range - 1);
+
+//     const adjustedStart = Math.max(1, end - range + 1);
+
+//     return Array.from(
+//       { length: end - adjustedStart + 1 },
+//       (_, i) => adjustedStart + i
+//     );
+//   };
 
   const indexOfLastInsight = currentPage * itemsPerPage;
   const indexOfFirstInsight = indexOfLastInsight - itemsPerPage;
@@ -173,7 +190,7 @@ const Dashboard = () => {
         setStartYear={setStartYear}
         endYear={endYear}
         setEndYear={setEndYear}
-        onSearch={debouncedFetchData} // Updated to use debounced function
+        onSearch={handleSearch}
         keyword={keyword}
       />
 
