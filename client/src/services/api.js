@@ -10,9 +10,7 @@ import axios from "axios";
  */
 export const fetchData = async (query, startYear, endYear) => {
   try {
-    const apiUrl = process.env.NODE_ENV === 'production'
-      ? process.env.REACT_APP_PRODUCTION_API_URL
-      : process.env.REACT_APP_API_URL;
+    const apiUrl = process.env.REACT_APP_PRODUCTION_API_URL;
 
     const response = await axios.get(`${apiUrl}/search`, {
       params: {
