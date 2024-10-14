@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 const SearchForm = ({
@@ -11,15 +11,32 @@ const SearchForm = ({
   onSearch,
   keyword,
 }) => {
-  // Using useCallback to prevent re-creation of the functions on every render
-  const handleChange = useCallback((setter) => (e) => {
-    setter(e.target.value);
-  }, []);
-
   const clearForm = () => {
     setQuery("");
     setStartYear("");
     setEndYear("");
+  };
+
+  const handleQueryChange = (e) => {
+    const value = e.target.value;
+    // Using requestAnimationFrame to schedule the state update
+    requestAnimationFrame(() => {
+      setQuery(value);
+    });
+  };
+
+  const handleStartYearChange = (e) => {
+    const value = e.target.value;
+    requestAnimationFrame(() => {
+      setStartYear(value);
+    });
+  };
+
+  const handleEndYearChange = (e) => {
+    const value = e.target.value;
+    requestAnimationFrame(() => {
+      setEndYear(value);
+    });
   };
 
   return (
@@ -36,7 +53,7 @@ const SearchForm = ({
             type="text"
             placeholder="You can search for insights by any word...."
             value={query}
-            onChange={handleChange(setQuery)} // Using the handleChange function
+            onChange={handleQueryChange} // Updated handler
             className="form-control"
             style={{ height: "40px" }}
           />
@@ -64,7 +81,7 @@ const SearchForm = ({
         <div className="col-lg-2 col-md-3">
           <select
             value={startYear}
-            onChange={handleChange(setStartYear)} // Using the handleChange function
+            onChange={handleStartYearChange} // Updated handler
             className="form-select"
             style={{ height: "40px" }}
           >
@@ -83,7 +100,7 @@ const SearchForm = ({
         <div className="col-lg-2 col-md-3">
           <select
             value={endYear}
-            onChange={handleChange(setEndYear)} // Using the handleChange function
+            onChange={handleEndYearChange} // Updated handler
             className="form-select"
             style={{ height: "40px" }}
           >
