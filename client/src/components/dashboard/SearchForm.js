@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 const SearchForm = ({
@@ -11,6 +11,11 @@ const SearchForm = ({
   onSearch,
   keyword,
 }) => {
+  // Using useCallback to prevent re-creation of the functions on every render
+  const handleChange = useCallback((setter) => (e) => {
+    setter(e.target.value);
+  }, []);
+
   const clearForm = () => {
     setQuery("");
     setStartYear("");
@@ -31,7 +36,7 @@ const SearchForm = ({
             type="text"
             placeholder="You can search for insights by any word...."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={handleChange(setQuery)} // Using the handleChange function
             className="form-control"
             style={{ height: "40px" }}
           />
@@ -59,7 +64,7 @@ const SearchForm = ({
         <div className="col-lg-2 col-md-3">
           <select
             value={startYear}
-            onChange={(e) => setStartYear(e.target.value)}
+            onChange={handleChange(setStartYear)} // Using the handleChange function
             className="form-select"
             style={{ height: "40px" }}
           >
@@ -78,7 +83,7 @@ const SearchForm = ({
         <div className="col-lg-2 col-md-3">
           <select
             value={endYear}
-            onChange={(e) => setEndYear(e.target.value)}
+            onChange={handleChange(setEndYear)} // Using the handleChange function
             className="form-select"
             style={{ height: "40px" }}
           >
