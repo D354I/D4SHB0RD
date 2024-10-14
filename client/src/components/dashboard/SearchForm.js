@@ -1,6 +1,5 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { debounce } from "lodash";
 
 const SearchForm = ({
   query,
@@ -12,21 +11,6 @@ const SearchForm = ({
   onSearch,
   keyword,
 }) => {
-  // Create a debounced version of onSearch
-  const debouncedSearch = debounce(() => {
-    onSearch();
-  }, 300); // Adjust the delay as necessary (300ms here)
-
-  useEffect(() => {
-    // Call debounced function whenever query changes
-    debouncedSearch();
-
-    // Cleanup function to cancel the debounce on unmount or when the query changes
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [query]); // Only rerun if query changes
-
   const clearForm = () => {
     setQuery("");
     setStartYear("");
